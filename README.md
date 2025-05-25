@@ -25,7 +25,6 @@ Content inside of `tikz` code blocks will be rendered by TikZJax.
 
 - The standalone document class is used (`\documentclass{standalone}`).
 
-
 ### Examples
 <img width=300 align="right" src="./imgs/img1.png">
 
@@ -168,6 +167,13 @@ C' \arrow[rr,"k'" near end] \arrow[dr,swap,"c"] && D' \arrow[dr,swap,"d"] \\
 \end{document}
 ```
 ````
+
+## CSS Styling for TikZ Code Blocks
+
+You can specify CSS properties for your TikZ diagrams by placing one or more lines starting with `%` at the top of the code block.  
+All contiguous lines at the start that begin with `%` or `% ` (with or without a space) will be parsed as CSS and applied to the diagram's container.
+
+Properties can be separated by semicolons (`;`), and you may use any valid CSS.
 
 ## Contributing
 Contributions are welcome! For information on building Tikzjax, have a look at the [contributing guide](https://github.com/artisticat1/obsidian-tikzjax/issues/68), courtesy of [@thecodechemist99](https://github.com/thecodechemist99).

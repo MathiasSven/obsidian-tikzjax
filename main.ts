@@ -94,12 +94,36 @@ export default class TikzjaxPlugin extends Plugin {
 
 	registerTikzCodeBlock() {
 		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
-			const script = el.createEl("script");
+			const lines = source.split("\n");
+			const cssLines: string[] = [];
 
+	        // Find the index where the CSS block ends (first non-% line)
+			const codeStart = lines.findIndex(line => !line.trimStart().startsWith("%"));
+			// If all lines are CSS, codeStart will be -1
+			const codeLines = codeStart === -1 ? [] : lines.slice(codeStart);
+
+			for (const line of lines.slice(0, codeStart === -1 ? lines.length : codeStart)) {
+				// Remove leading %, any spaces, then trim
+				const cssText = line.replace(/^%\s*/, "").trim();
+				if (cssText.length > 0) cssLines.push(cssText);
+			}
+
+			// Join all CSS chunks, respecting possible semicolons in-line
+			const cssString = cssLines.join("; ");
+
+			const cleanedSource = codeLines.join("\n");
+
+			// Create a wrapper div to apply CSS styling
+			const wrapper = el.createDiv();
+			if (cssString) {
+				wrapper.setAttr("style", cssString);
+			}
+
+			const script = wrapper.createEl("script");
 			script.setAttribute("type", "text/tikz");
 			script.setAttribute("data-show-console", "true");
 
-			script.setText(this.tidyTikzSource(source));
+			script.setText(this.tidyTikzSource(cleanedSource));
 		});
 	}
 
