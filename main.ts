@@ -23,7 +23,7 @@ export default class TikzjaxPlugin extends Plugin {
 
 
 		this.addSyntaxHighlighting();
-		
+
 		this.registerTikzCodeBlock();
 	}
 
@@ -75,14 +75,14 @@ export default class TikzjaxPlugin extends Plugin {
 		// Via https://discord.com/channels/686053708261228577/840286264964022302/991591350107635753
 
 		const windows = [];
-		
+
 		// push the main window's root split to the list
 		windows.push(this.app.workspace.rootSplit.win);
-		
+
 		// @ts-ignore floatingSplit is undocumented
 		const floatingSplit = this.app.workspace.floatingSplit;
 		floatingSplit.children.forEach((child: any) => {
-			// if this is a window, push it to the list 
+			// if this is a window, push it to the list
 			if (child instanceof WorkspaceWindow) {
 				windows.push(child.win);
 			}
@@ -94,12 +94,36 @@ export default class TikzjaxPlugin extends Plugin {
 
 	registerTikzCodeBlock() {
 		this.registerMarkdownCodeBlockProcessor("tikz", (source, el, ctx) => {
-			const script = el.createEl("script");
+			const lines = source.split("\n");
+			const cssLines: string[] = [];
 
+			// Find the index where the CSS block ends (first non-% line)
+			const codeStart = lines.findIndex(line => !line.trimStart().startsWith("%"));
+			// If all lines are CSS, codeStart will be -1
+			const codeLines = codeStart === -1 ? [] : lines.slice(codeStart);
+
+			for (const line of lines.slice(0, codeStart === -1 ? lines.length : codeStart)) {
+				// Remove leading %, any spaces, then trim
+				const cssText = line.replace(/^%\s*/, "").trim();
+				if (cssText.length > 0) cssLines.push(cssText);
+			}
+
+			// Join all CSS chunks, respecting possible semicolons in-line
+			const cssString = cssLines.join("; ");
+
+			const cleanedSource = codeLines.join("\n");
+
+			// Create a wrapper div to apply CSS styling
+			const wrapper = el.createDiv();
+			if (cssString) {
+				wrapper.setAttr("style", cssString);
+			}
+
+			const script = wrapper.createEl("script");
 			script.setAttribute("type", "text/tikz");
 			script.setAttribute("data-show-console", "true");
 
-			script.setText(this.tidyTikzSource(source));
+			script.setText(this.tidyTikzSource(cleanedSource));
 		});
 	}
 
