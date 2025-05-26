@@ -24,5 +24,8 @@
 		"pako": "^2.0.4",
 		"tslib": "2.3.1",
 		"typescript": "^5.8.3"
+	},
+	"dependencies": {
+		"uuid": "^11.1.0"
 	}
 }

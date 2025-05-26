@@ -1,6 +1,7 @@
 import { Plugin, WorkspaceWindow } from 'obsidian';
 import { TikzjaxPluginSettings, DEFAULT_SETTINGS, TikzjaxSettingTab } from "./settings";
 import { optimize } from "./svgo.browser";
+import { v4 as uuidv4 } from 'uuid';
 
 // @ts-ignore
 import tikzjaxJs from 'inline:./tikzjax.js';
@@ -192,10 +193,22 @@ export default class TikzjaxPlugin extends Plugin {
 		}).data;
 	}
 
+	isolateIds(svgEl: HTMLElement): void {
+		const elementsWithIds = svgEl.querySelectorAll<HTMLElement>('[id]');
+		for (let element of elementsWithIds) {
+			let oldId = element.id;
+			let newId = uuidv4();
+
+			svgEl.innerHTML = svgEl.innerHTML.replaceAll(oldId, newId);
+		}
+	}
 
 	postProcessSvg = (e: Event) => {
 
 		const svgEl = e.target as HTMLElement;
+
+		this.isolateIds(svgEl);
+
 		let svg = svgEl.outerHTML;
 
 		if (this.settings.invertColorsInDarkMode) {
